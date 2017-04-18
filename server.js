@@ -4,16 +4,30 @@ const app = express();
 const Discord = require('discord.js');
 
 const bot = new Discord.Client();
+const botClient = new Discord.ClientUser();
 
-const token = 'Mjk3MjQ5NDI0NTc1NTYxNzI5.C7-Cvg.EUwK9G0FUVF72qbiXOopf3yDJZw';
+app.use(express.static('public'));
+
+// Login with the bot's token
+bot.login(process.env.BOT_TOKEN);
+
+app.get('/init', (req, res) => {
+    const data = {
+        user: bot.user,
+        avatar: botClient.avatarURL,
+        aURL: botClient.defaultAvatarURL
+    };
+    res.send(data);
+});
 
 // This code will run once the bot has started up.
-bot.on("ready", function () {
+bot.on("ready", () => {
     console.log("Ready to begin!");
+    app.listen(3000);
 });
 
 // This code will run once the bot has disconnected from Discord.
-bot.on("disconnected", function () {
+bot.on("disconnected", () => {
     // alert the console
     console.log("Disconnected!");
 
@@ -31,14 +45,4 @@ bot.on('message', message => {
     } else {
         console.log(`(${message.server} / ${message.channel.name}) ${message.author.name}: ${message.content}`);
     }
-});
-
-// Login (replace these auth details with your bot's)
-bot.login(token);
-
-app.listen(3000);
-
-app.get('/', function(req, res) {
-    res.send("DiscBot serving on: " + bot.users);
-
 });
