@@ -1,19 +1,25 @@
+'use strict';
 const dotenv = require('dotenv').config(),
     express = require('express'),
     app = express(),
     Discord = require('discord.js'),
     shelp = require('./modules/ServerHelper.js'),
-    Imgur = require('./modules/Imgur.js');
+    Imgur = require('./modules/Imgur.js'),
+    DB = require('./modules/DataBase.js');
 
 // Initialize client
 const bot = new Discord.Client();
-// Initialize imgur module
-const imgur = new Imgur();
 
 app.use(express.static('public'));
 
-// Login with the bot's token
-bot.login(process.env.BOT_TOKEN);
+// set up database
+const user = process.env.DB_USER;
+const pw = process.env.DB_PASS;
+const host = process.env.DB_HOST;
+DB.connect('mongodb://' + user + ":" + pw + "@" + host, app, callback => {
+    // Login with the bot's token
+    bot.login(process.env.BOT_TOKEN);
+});
 
 app.get('/init', (req, res) => {
     const data = {
@@ -26,7 +32,6 @@ app.get('/init', (req, res) => {
 // This code will run once the bot has started up.
 bot.on('ready', () => {
     console.log('Ready to serve!');
-    app.listen(3000);
 });
 
 // This code will run once the bot has disconnected from Discord.
@@ -39,10 +44,22 @@ bot.on('disconnected', () => {
 
 // This code will run once the bot receives any message.
 bot.on('message', message => {
-    const msg = message.content.split(" ", 2);
+    // turn the search query to lowercase letters and trim all unnecessary whitespace
+    const messageString = message.content.toLowerCase().trim();
+    const msg = messageString.split(" ");
+
     if (msg[0] === 'ping') {
         message.reply('pong');
     }
+
+    if (msg[0] === '!help'){
+        message.reply('Following commands are available: \n'
+            + '\n !setavatar [image web URL]'
+            + '\n !imgur [search word/s]'
+            + '\n !ping'
+        );
+    }
+
     // Command for setting the avatar image for the bot
     if (msg[0] === '!setavatar' && msg.length > 1){
         bot.user.setAvatar(msg[1])
@@ -54,7 +71,7 @@ bot.on('message', message => {
         });
     }
     if (msg[0] === '!imgur' && msg.length > 1) {
-        const search = imgur.search(msg[1], (result) => {
+        const search = Imgur.searchImage(msg[0],(messageString), (result) => {
             console.log('search result: ' + result );
             message.reply(result);
         });
@@ -66,7 +83,7 @@ bot.on('message', message => {
         if (message.channel.isPrivate) {
             console.log(`(Private) ${message.author.username}: ${message.content}`);
         } else {
-            console.log(`(${message.server} / ${message.channel.name}) ${message.author.username}: ${message.content}`);
+            console.log(`(${message.guild} / ${message.channel.name}) ${message.author.username}: ${message.content}`);
         }
     }
 });

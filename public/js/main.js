@@ -6,7 +6,10 @@ const initialize = () => {
     }).then(response => {
         const data = response;
         console.log(data);
-        document.querySelector('#content').append('botname: ' + data.user.username);
+        document.querySelector('#content').append('botname: ' + data.user.username + ' ');
+        const img = document.createElement('img');
+        img.src = data.avatar;
+        document.querySelector('#content').append(img);
     });
 };
 
