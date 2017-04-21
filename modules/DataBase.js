@@ -3,7 +3,7 @@
 class Database {
     constructor() {
         this.mongoose = require('mongoose');
-        this.mongoose.Promise = global.Promise; //ES6 Promise
+        this.mongoose.Promise = global.Promise;
     };
 
     connect(url, app, callback) {

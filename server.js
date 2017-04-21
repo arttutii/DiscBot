@@ -46,9 +46,9 @@ bot.on('disconnected', () => {
 bot.on('message', message => {
     // turn the search query to lowercase letters and trim all unnecessary whitespace
     const messageString = message.content.toLowerCase().trim();
-    const msg = messageString.split(" ");
+    let msg = messageString.split(" ");
 
-    if (msg[0] === 'ping') {
+    if (msg[0] === '!ping') {
         message.reply('pong');
     }
 
@@ -62,14 +62,24 @@ bot.on('message', message => {
 
     // Command for setting the avatar image for the bot
     if (msg[0] === '!setavatar' && msg.length > 1){
-        bot.user.setAvatar(msg[1])
-            .then(user =>
-                console.log(`New avatar set! user: ` + user)
-            ).catch((err) => {
-            console.log(err);
+        // check if the URL is valid
+        if(msg[1].startsWith("http://") || msg[1].startsWith("https://")){
+            bot.user.setAvatar(msg[1])
+                .then(user =>
+                    console.log(`New avatar set!`)
+                ).catch((err) => {
+                console.log(err);
+                if (err.status == 400){
+                    message.reply('Sorry, you are changing the avatar too frequently. Please wait and try again later.');
+                } else {
+                    message.reply('Sorry could not set the avatar image. The URL for the avatar you requested did not result an image.');
+                }
+            });
+        } else {
             message.reply('Sorry could not set the avatar image. The URL for the avatar you requested is not valid.');
-        });
+        }
     }
+
     if (msg[0] === '!imgur' && msg.length > 1) {
         const search = Imgur.searchImage(msg[0],(messageString), (result) => {
             console.log('search result: ' + result );
