@@ -25,6 +25,7 @@ class Database {
         }, (err) => {
             console.log(err.message);
             console.error('Connecting to Mongo failed');
+            process.exit(1);
         });
     };
 

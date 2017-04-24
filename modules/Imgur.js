@@ -1,7 +1,6 @@
 'use strict';
 
-const dotenv = require('dotenv').config(),
-    Imgur = require("imgur-search");
+const Imgur = require("imgur-search");
 
 class ImgurModule {
 
