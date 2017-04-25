@@ -5,11 +5,13 @@ const dotenv = require('dotenv').config(),
     Discord = require('discord.js'),
     shelp = require('./modules/ServerHelper.js'),
     Imgur = require('./modules/Imgur.js'),
-    Giphy = require('.modules/Giphy.js'),
+    Giphy = require('./modules/Giphy.js'),
     DB = require('./modules/DataBase.js');
 
 // Initialize client
 const bot = new Discord.Client();
+// bot's current voice channel
+let voiceChannel = null;
 
 app.use(express.static('public'));
 
@@ -57,8 +59,27 @@ bot.on('message', message => {
         message.reply('Following commands are available: \n'
             + '\n !setavatar [image web URL]'
             + '\n !imgur [search word/s]'
+            + '\n !giphy [search word/s]'
             + '\n !ping'
+            + '\n !hello'
+            + '\n !stop'
         );
+    }
+
+    if (msg[0] === '!hello'){
+        voiceChannel = bot.channels.find(channel => channel.name === 'General');
+        console.log(voiceChannel);
+        voiceChannel.join().then(connection => {
+            // you can play a file or a stream here:
+            const dispatcher = connection.playFile('./public/audio/hey.mp3');
+        });
+    }
+
+    if (msg[0] === '!stop'){
+        if (voiceChannel){
+            console.log(voiceChannel);
+            voiceChannel.leave();
+        }
     }
 
     // Command for setting the avatar image for the bot
@@ -85,14 +106,14 @@ bot.on('message', message => {
 
     if (msg[0] === '!imgur' && msg.length > 1) {
         Imgur.searchImage(msg[0],(messageString), (result) => {
-            console.log('search result: ' + result );
+            console.log('imgur result: ' + result );
             message.reply(result);
         });
     }
 
     if (msg[0] === '!giphy' && msg.length > 1) {
         Giphy.searchGif(msg[0],(messageString), (result) => {
-            console.log(' result: ' + result );
+            console.log('giphy result: ' + result );
             message.reply(result);
         });
     }
