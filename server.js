@@ -67,8 +67,7 @@ bot.on('message', message => {
     }
 
     if (msg[0] === '!hello'){
-        voiceChannel = bot.channels.find(channel => channel.name === 'General');
-        console.log(voiceChannel);
+        voiceChannel = bot.channels.find(channel => channel.name === 'Afrikkalainen viihtymis- ja nautintokanava');
         voiceChannel.join().then(connection => {
             // you can play a file or a stream here:
             const dispatcher = connection.playFile('./public/audio/hey.mp3');
