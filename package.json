@@ -25,6 +25,7 @@
     "mongoose": "^4.9.5",
     "node-fetch": "^1.6.3",
     "node-opus": "^0.2.6",
-    "supervisor": "^0.12.0"
+    "supervisor": "^0.12.0",
+    "ytdl-core": "^0.13.1"
   }
 }

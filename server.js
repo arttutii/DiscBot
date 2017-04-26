@@ -3,9 +3,11 @@ const dotenv = require('dotenv').config(),
     express = require('express'),
     app = express(),
     Discord = require('discord.js'),
+    ytdl = require('ytdl-core'),
     shelp = require('./modules/ServerHelper.js'),
     Imgur = require('./modules/Imgur.js'),
     Giphy = require('./modules/Giphy.js'),
+    YT = require('./modules/YouTube.js'),
     DB = require('./modules/DataBase.js');
 
 // Initialize client
@@ -51,32 +53,47 @@ bot.on('message', message => {
     const messageString = message.content.toLowerCase().trim().replace(/ +/g, " ");
     let msg = messageString.split(" ");
 
-    if (msg[0] === '!ping') {
-        message.reply('pong');
-    }
-
     if (msg[0] === '!help'){
         message.reply('Following commands are available: \n'
             + '\n !setavatar [image web URL]'
             + '\n !imgur [search word/s]'
             + '\n !giphy [search word/s]'
-            + '\n !ping'
+            + '\n !yt [search word/s]'
             + '\n !hello'
             + '\n !stop'
         );
     }
 
     if (msg[0] === '!hello'){
-        voiceChannel = bot.channels.find(channel => channel.name === 'Afrikkalainen viihtymis- ja nautintokanava');
-        voiceChannel.join().then(connection => {
-            // you can play a file or a stream here:
-            const dispatcher = connection.playFile('./public/audio/hey.mp3');
-        });
+        try {
+            // if an audio was playing, stop it before starting a new one
+            if (voiceChannel){
+                voiceChannel.leave();
+            }
+
+            // Get the first voice channel on the server of the sender
+            const firstVC = message.guild.channels.find(res => res.type === 'voice');
+            // Get the message sender's current voice channel
+            const userVC = message.guild.members.find(member => member.id === message.author.id).voiceChannelID;
+
+            // Find the channel from the bot's perspective and join it
+            if (userVC){
+                voiceChannel = bot.channels.find(channel => channel.id === userVC);
+            } else {
+                voiceChannel = bot.channels.find(channel => channel === firstVC);
+            }
+            voiceChannel.join().then(connection => {
+                // play the sound file
+                const dispatcher = connection.playFile('./public/audio/hey.mp3');
+
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     if (msg[0] === '!stop'){
         if (voiceChannel){
-            console.log(voiceChannel);
             voiceChannel.leave();
         }
     }
@@ -98,7 +115,7 @@ bot.on('message', message => {
                 }
             });
         } else {
-            console.log('Requested avatar url not valid.' + messageString.replace(/ +/g, " "));
+            console.log('Requested avatar url not valid.');
             message.reply('Sorry could not set the avatar image. The URL for the avatar you requested is not valid.');
         }
     }
@@ -114,6 +131,38 @@ bot.on('message', message => {
         Giphy.searchGif(msg[0],(messageString), (result) => {
             console.log('giphy result: ' + result );
             message.reply(result);
+        });
+    }
+
+    if (msg[0] === '!yt' && msg.length > 1) {
+        YT.ytSearch(msg[0],(messageString), (result) => {
+            console.log('youtube result: ' + result );
+
+            // if an audio was playing, stop it before starting a new one
+            if (voiceChannel){
+                voiceChannel.leave();
+            }
+
+            const stream = ytdl('https://www.youtube.com/watch?v=' + result, {filter: 'audioonly'});
+            const streamOptions = {seek: 0, volume: 1};
+
+            // Get the first voice channel on the server of the sender
+            const firstVC = message.guild.channels.find(res => res.type === 'voice');
+            // Get the message sender's current voice channel
+            const userVC = message.guild.members.find(member => member.id === message.author.id).voiceChannelID;
+
+            // Find the channel from the bot's perspective and join it
+            if (userVC){
+                voiceChannel = bot.channels.find(channel => channel.id === userVC);
+            } else {
+                voiceChannel = bot.channels.find(channel => channel === firstVC);
+            }
+            voiceChannel.join().then(connection => {
+                // play the sound file
+                const dispatcher = connection.playStream(stream, streamOptions);
+
+            });
+
         });
     }
 
