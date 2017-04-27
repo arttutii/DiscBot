@@ -8,10 +8,9 @@ class ImgurModule {
         this.imgSearch = new Imgur(process.env.IMGUR_KEY);
     }
 
-    searchImage(keyword, query, callback) {
-        const keyWordIndex = query.indexOf(keyword);
+    searchImage(query, callback) {
         // substract the keyword from the string and turn the term into a proper query
-        const searchTerm = query.substring(keyWordIndex + keyword.length).trim().replace(/\s/g, "+");
+        const searchTerm = query.trim().replace(/\s/g, "+");
 
         this.imgSearch.search(searchTerm).then((results) => {
             if (results === undefined || results.length === 0) {

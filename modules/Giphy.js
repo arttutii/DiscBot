@@ -4,11 +4,9 @@ const fetch = require('node-fetch');
 
 class GiphyModule {
 
-    searchGif(keyword, query, callback) {
-        const keyWordIndex = query.indexOf(keyword);
+    searchGif(query, callback) {
         // substract the keyword from the string and turn the term into a proper query
-        const searchTerm = query.substring(keyWordIndex + keyword.length).trim().replace(/\s/g, "+");
-
+        const searchTerm = query.trim().replace(/\s/g, "+");
 
         fetch('http://api.giphy.com/v1/gifs/search?q=' + searchTerm + '&api_key=' + process.env.GIPHY_KEY)
             .then((res) => {
