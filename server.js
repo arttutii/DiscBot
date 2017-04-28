@@ -101,6 +101,10 @@ DiscBot.client.on('message', message => {
         });
     }
 
+    if (keyword === '!tts' && params) {
+        // TBA
+    }
+
     // print out whatever was received to the console
     // filter out the messages sent out by the bot
     if (message.author.id !== DiscBot.client.user.id){

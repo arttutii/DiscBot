@@ -13,4 +13,4 @@ const initialize = () => {
     });
 };
 
-initialize();
+$('#content').load('./views/login.html');
