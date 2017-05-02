@@ -9,6 +9,8 @@ class DiscBot {
         this.client = new Discord.Client();
         // bot's current voice channel
         this.voiceChannel = null;
+        // variable for the current playing audio
+        this.currentAudio = null;
     }
 
     leaveVoiceChannel() {
@@ -37,11 +39,22 @@ class DiscBot {
         }
     }
 
+    startAudio(connection, vidURL, localFile) {
+        // play the file
+        if (localFile) {
+            this.currentAudio = connection.playFile(localFile);
+        } else {
+            const stream = ytdl('https://www.youtube.com/watch?v=' + vidURL, {filter: 'audioonly'});
+            const streamOptions = {seek: 0, volume: 1};
+            this.currentAudio = connection.playStream(stream, streamOptions);
+        }
+    }
+
     playAudio(message, vidURL, localFile) {
         try {
             // if an audio was playing, stop it before starting a new one
-            if (this.voiceChannel) {
-                this.voiceChannel.leave();
+            if (this.currentAudio) {
+                this.currentAudio.end();
             }
 
             // Get the first voice channel on the server of the sender
@@ -56,17 +69,14 @@ class DiscBot {
                 this.voiceChannel = (this.client.channels.find(channel => channel === firstVC));
             }
 
-            this.voiceChannel.join().then(connection => {
-                // play the file
-                if (localFile) {
-                    const dispatcher = connection.playFile(localFile);
-                } else {
-                    const stream = ytdl('https://www.youtube.com/watch?v=' + vidURL, {filter: 'audioonly'});
-                    const streamOptions = {seek: 0, volume: 1};
-                    const dispatcher = connection.playStream(stream, streamOptions);
-                }
+            if (this.voiceChannel === userVC){
+                this.startAudio(this.voiceChannel.connection, vidURL, localFile);
+            } else {
+                this.voiceChannel.join().then(connection => {
+                    this.startAudio(connection, vidURL, localFile);
+                });
+            }
 
-            });
         } catch (e) {
             console.log(e);
         }

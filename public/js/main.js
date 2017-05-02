@@ -13,4 +13,10 @@ const initialize = () => {
     });
 };
 
-$('#content').load('./views/login.html');
+document.querySelector('#logOutBtn').addEventListener('click', (e) => {
+    fetch('/logout').then( response => {
+        console.log(response);
+    });
+});
+
+//initialize();

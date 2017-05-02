@@ -16,6 +16,16 @@ class ServerHelper {
         let end = newStr.length-1;
         return newStr.substr(start, end);
     }
+
+
+    loginStatus(req, res, next) {
+        if (req.user) {
+            next();
+        } else {
+            res.redirect('/login.html');
+        }
+    }
+
 }
 
 module.exports = new ServerHelper;

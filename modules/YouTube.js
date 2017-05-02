@@ -14,7 +14,7 @@ class YouTubeModule {
             }).then((results) => {
 
             if (results.items.length == 0) {
-                callback('Search with term "' + searchTerm + '" did not find any videos.');
+                callback({status: 'error', message: 'Search with term "' + searchTerm + '" did not find any videos.'});
             } else {
                 // Go through the entries and take the first video in the list
                 let vid = '';
@@ -24,7 +24,7 @@ class YouTubeModule {
                         break;
                     }
                 }
-                callback(vid);
+                callback({status: 'OK', message: vid});
             }
 
         });

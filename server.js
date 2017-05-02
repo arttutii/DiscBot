@@ -2,7 +2,11 @@
 const dotenv = require('dotenv').config(),
     express = require('express'),
     app = express(),
+    session = require('express-session'),
+    passport = require('passport'),
+    LocalStrategy = require('passport-local').Strategy,
     ytdl = require('ytdl-core'),
+    bcrypt = require('bcrypt'),
     DiscBot = require('./modules/DiscBot'),
     shelp = require('./modules/ServerHelper.js'),
     Imgur = require('./modules/Imgur.js'),
@@ -12,6 +16,8 @@ const dotenv = require('dotenv').config(),
 
 app.use(express.static('public'));
 
+app.enable('trust proxy');
+
 // set up database
 const user = process.env.DB_USER;
 const pw = process.env.DB_PASS;
@@ -19,8 +25,74 @@ const host = process.env.DB_HOST;
 DB.connect('mongodb://' + user + ":" + pw + "@" + host, app, () => {
     // Login with the bot's token
     DiscBot.client.login(process.env.BOT_TOKEN);
+
 });
 
+const UserSchema = {
+    username: {type: String, required: true, index: {unique: true}},
+    password: {type: String, required: true}
+};
+
+const User = DB.getUserSchema(UserSchema);
+
+// Hash the password of the user and get the model
+const newSchema = DB.hashPassword(User);
+const userModel = DB.mongoose.model('User',newSchema);
+
+/*DB.createUser(userModel, 'admin','password', (callback) => {
+     console.log(callback);
+});*/
+
+// Passport start
+/*passport.use(new LocalStrategy(
+    (username, password, done)   => {
+        userModel.findOne({ username: username }, (err, user) => {
+            if (err) {
+                console.log('incorrect cred');
+                done(null, false, {message: 'Incorrect credentials.'});
+            } else {
+                user.comparePassword(password, (err, isMatch) => {
+                    console.log('password is match: ', isMatch);
+                    if (err) {
+                        done(null, false, {message: 'Incorrect credentials.'});
+                    } else {
+                        return done(null, { username: username });
+                    }
+                });
+            }
+        });
+    }
+));*/
+passport.use(new LocalStrategy(
+    (username, password, done) => {
+        if (username !== process.env.username || password !== process.env.password) {
+            console.log('nay');
+            done(null, false, {message: 'Incorrect credentials.'});
+            return;
+        }
+        console.log('yay');
+        return done(null, { username: username });
+    }
+));
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+app.use(session({
+    secret: 'some s3cr3t value',
+    resave: true,
+    saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+// Passport end
+
+// Express routings
 app.get('/init', (req, res) => {
     const data = {
         user: DiscBot.client.user,
@@ -28,6 +100,41 @@ app.get('/init', (req, res) => {
     };
     res.send(data);
 });
+
+app.get('/*', shelp.loginStatus);
+
+app.get('/test', (req,res) => {
+    // fetch user and test password verification
+    userModel.findOne({ username: 'admin' }, (err, user) => {
+        if (err) {
+            throw err;
+        } else {
+            user.comparePassword('password', (err, isMatch) => {
+                console.log('test:', isMatch);
+            });
+
+            user.comparePassword('123Password', (err, isMatch) => {
+                console.log('123Password:', isMatch);
+            });
+        }
+    });
+});
+
+app.post('/login',
+    passport.authenticate('local', { successRedirect: 'frontpage.html', failureRedirect: 'login.html' })
+);
+
+
+app.get('/logout', (req, res) => {
+    console.log('loggin out');
+    req.session.destroy(function (err) {
+        if (err) console.log(err);
+
+        res.redirect('/');
+    });
+});
+
+// Express routings end
 
 // This code will run once the bot has started up.
 DiscBot.client.on('ready', () => {
@@ -96,8 +203,12 @@ DiscBot.client.on('message', message => {
 
     if (keyword === '!yt' && params) {
         YT.ytSearch(params, (result) => {
-            console.log('youtube result: ' + result );
-            DiscBot.playAudio(message, result);
+            if (result.status === 'OK'){
+                console.log('youtube result: ' + result.message);
+                DiscBot.playAudio(message, result.message);
+            } else {
+                message.reply(result.message);
+            }
         });
     }
 
