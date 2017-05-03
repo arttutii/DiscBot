@@ -22,7 +22,8 @@ class ServerHelper {
         if (req.user) {
             next();
         } else {
-            res.redirect('/login.html');
+            console.log('to the login page');
+            res.redirect('/login');
         }
     }
 

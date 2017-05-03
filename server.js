@@ -13,8 +13,11 @@ const dotenv = require('dotenv').config(),
     Giphy = require('./modules/Giphy.js'),
     YT = require('./modules/YouTube.js'),
     DB = require('./modules/DataBase.js');
+const bodyParser = require('body-parser');
 
 app.use(express.static('public'));
+
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.enable('trust proxy');
 
@@ -39,39 +42,27 @@ const User = DB.getUserSchema(UserSchema);
 const newSchema = DB.hashPassword(User);
 const userModel = DB.mongoose.model('User',newSchema);
 
-/*DB.createUser(userModel, 'admin','password', (callback) => {
-     console.log(callback);
-});*/
-
 // Passport start
-/*passport.use(new LocalStrategy(
+passport.use(new LocalStrategy(
     (username, password, done)   => {
         userModel.findOne({ username: username }, (err, user) => {
             if (err) {
                 console.log('incorrect cred');
                 done(null, false, {message: 'Incorrect credentials.'});
             } else {
-                user.comparePassword(password, (err, isMatch) => {
-                    console.log('password is match: ', isMatch);
-                    if (err) {
-                        done(null, false, {message: 'Incorrect credentials.'});
-                    } else {
-                        return done(null, { username: username });
-                    }
-                });
+                if (user){
+                    user.comparePassword(password, (err, isMatch) => {
+                        if (!isMatch) {
+                            done(null, false, {message: 'Incorrect credentials.'});
+                        } else {
+                            return done(null, { username: username });
+                        }
+                    });
+                } else {
+                    done(null, false, {message: 'Incorrect credentials.'});
+                }
             }
         });
-    }
-));*/
-passport.use(new LocalStrategy(
-    (username, password, done) => {
-        if (username !== process.env.username || password !== process.env.password) {
-            console.log('nay');
-            done(null, false, {message: 'Incorrect credentials.'});
-            return;
-        }
-        console.log('yay');
-        return done(null, { username: username });
     }
 ));
 
@@ -84,7 +75,7 @@ passport.deserializeUser((user, done) => {
 });
 
 app.use(session({
-    secret: 'some s3cr3t value',
+    secret: 'dejavu',
     resave: true,
     saveUninitialized: true
 }));
@@ -100,8 +91,6 @@ app.get('/init', (req, res) => {
     };
     res.send(data);
 });
-
-app.get('/*', shelp.loginStatus);
 
 app.get('/test', (req,res) => {
     // fetch user and test password verification
@@ -120,10 +109,25 @@ app.get('/test', (req,res) => {
     });
 });
 
-app.post('/login',
-    passport.authenticate('local', { successRedirect: 'frontpage.html', failureRedirect: 'login.html' })
-);
+app.get('/', shelp.loginStatus, (req, res) => {
+    res.redirect('/frontpage');
+});
 
+app.get('/frontpage', shelp.loginStatus, (req,res) => {
+    res.sendFile('frontpage.html', { root: 'public' });
+});
+
+app.get('/login', (req,res) => {
+    if(req.user){
+        res.redirect('/frontpage');
+    } else{
+        res.sendFile('login.html', { root: 'public' });
+    }
+});
+
+app.post('/login',
+    passport.authenticate('local', { successRedirect: '/frontpage', failureRedirect: '/login' })
+);
 
 app.get('/logout', (req, res) => {
     console.log('loggin out');
@@ -132,6 +136,51 @@ app.get('/logout', (req, res) => {
 
         res.redirect('/');
     });
+});
+
+app.get('/user', (req, res) => {
+    if (req.user === undefined) {
+        res.send({status: false});
+    } else {
+        res.json({
+            status: true,
+            user: req.user
+        });
+    }
+});
+
+app.post('/user', (req, res) => {
+    DB.createUser(userModel, req.body.username,req.body.password, callback => {
+        console.log(callback);
+    });
+});
+
+app.patch('/user', (req, res) => {
+    console.log('qwe: '+ req.body.username);
+    console.log(req.body);
+    /*if(req.body.oldPassword === req.body.newPassword){
+        DB.updateUser(userModel, req.body.username, req.body.newPassword, callback => {
+            console.log(callback);
+        });
+    }*/
+
+});
+
+app.delete('/user', (req, res) => {
+
+});
+
+app.use((req, res, next) => {
+    res.status(404);
+
+    // respond with html page
+    if (req.accepts('html')) {
+        res.send(`<img src="https://http.cat/${res.statusCode}">`);
+        return;
+    }
+
+    // default to plain-text. send()
+    res.type('txt').send('Not found');
 });
 
 // Express routings end

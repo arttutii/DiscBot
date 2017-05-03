@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>DiscBot Mainframe</title>
 
-    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/frontpage.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -14,10 +14,39 @@
 </head>
 
 <body>
+<div id="userInfo">
+    <p id="currentUser">    </p>
     <button id="logOutBtn">Log out</button>
+
+</div>
     <div id="content">
         <h1> hello</h1>
     </div>
+
+<div id="createUser">
+    <h2>Create new user</h2>
+    <form action="user" method="post">
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <input type="submit" name="createUser" value="Create User">
+    </form>
+</div>
+
+<div id="updateUser">
+    <h2>Update current password</h2>
+    <form id="updateForm">
+        <div class="form-group">
+            <input type="text" class="form-control" name="herou" placeholder="qwe">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" name="oldPassword" placeholder="Old password">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" name="newPassword" placeholder="New Password">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
 </body>
 
 <!-- Bootstrap and jQuery -->
