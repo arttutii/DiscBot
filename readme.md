@@ -4,11 +4,17 @@
 To use the bot `git clone https://github.com/arttutii/DiscBot.git` and create file `.env` to the root folder.
 For the contents of .env use this:
     `BOT_TOKEN= 'your discord bot token'
+
      IMGUR_KEY= 'your imgur account client key'
+
      GIPHY_KEY= 'your giphy account key'
+
      GOOGLE_KEY= 'your developers.google YouTube API key'
+
      DB_USER= 'mongoDB user'
+
      DB_PASS= 'mongoDB pass'
+
      DB_HOST= 'mongoDB URL'`
 
 ## Bot commands
