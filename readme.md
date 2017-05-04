@@ -3,6 +3,7 @@
 ## Setup.
 To use the bot `git clone https://github.com/arttutii/DiscBot.git` and create file `.env` to the root folder.
 For the contents of .env use this:
+
     `BOT_TOKEN= 'your discord bot token'
 
      IMGUR_KEY= 'your imgur account client key'
