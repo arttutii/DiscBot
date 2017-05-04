@@ -14,39 +14,63 @@
 </head>
 
 <body>
-<div id="userInfo">
-    <p id="currentUser">    </p>
-    <button id="logOutBtn">Log out</button>
-
-</div>
-    <div id="content">
-        <h1> hello</h1>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#info">Bot info</a></li>
+                <li><a data-toggle="tab" href="#manage">User management</a></li>
+            </ul>
+            <div id="userInfo">
+                <h3 id="currentUser"></h3>
+                <button id="logOutBtn" class="btn btn-default">Log out</button>
+            </div>
+            <div id="inviteBtn">
+                <a onclick="return createPopUp('https://discordapp.com/oauth2/authorize?&client_id=297249424575561729&scope=bot&permissions=8')">
+                    <button class="btn btn-default">Invite to your server</button>
+                </a>
+            </div>
+        </div>
     </div>
 
-<div id="createUser">
-    <h2>Create new user</h2>
-    <form action="user" method="post">
-        <input type="text" name="username" placeholder="Username">
-        <input type="password" name="password" placeholder="Password">
-        <input type="submit" name="createUser" value="Create User">
-    </form>
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="info" role="tabpanel">
+            <div class="row">
+                <div id="content" class="col"></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="manage" role="tabpanel">
+            <div class="row">
+                <div id="createUser">
+                    <h2>Create new user</h2>
+                    <form action="user" method="post">
+                        <input type="text" class="form-control" name="username" placeholder="Username">
+                        <input type="password" class="form-control" name="password" placeholder="Password">
+                        <input type="submit" class="btn btn-primary" value="Create User">
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div id="updateUser">
+                    <h2>Update current password</h2>
+                    <form id="updateForm">
+                        <input type="password" id="oldPassword" class="form-control" name="oldPassword" placeholder="Old password">
+                        <input type="password" id="newPassword" class="form-control" name="newPassword" placeholder="New Password">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div id="deleteUser">
+                    <h2>Delete my user</h2>
+                    <button class="btn btn-danger" id="deleteBtn">DELETE</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="updateUser">
-    <h2>Update current password</h2>
-    <form id="updateForm">
-        <div class="form-group">
-            <input type="text" class="form-control" name="herou" placeholder="qwe">
-        </div>
-        <div class="form-group">
-            <input type="password" class="form-control" name="oldPassword" placeholder="Old password">
-        </div>
-        <div class="form-group">
-            <input type="password" class="form-control" name="newPassword" placeholder="New Password">
-        </div>
-        <button type="submit" class="btn btn-primary">Update</button>
-    </form>
-</div>
+
 </body>
 
 <!-- Bootstrap and jQuery -->

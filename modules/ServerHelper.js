@@ -17,16 +17,13 @@ class ServerHelper {
         return newStr.substr(start, end);
     }
 
-
     loginStatus(req, res, next) {
         if (req.user) {
             next();
         } else {
-            console.log('to the login page');
             res.redirect('/login');
         }
     }
-
 }
 
 module.exports = new ServerHelper;

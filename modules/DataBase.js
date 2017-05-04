@@ -13,15 +13,7 @@ class Database {
         this.app = app;
         this.mongoose.connect(this.url).then(() => {
             console.log('Mongo connected');
-            /*this.app.use ((req, res, next) => {
-             if (req.secure) {
-             // request was via https, so do no special handling
-             next();
-             } else {
-             // request was via http, so redirect to https
-             res.redirect('https://' + req.headers.host + req.url);
-             }
-             });*/
+
             this.app.listen(3000);
             callback('Success');
         }, (err) => {
@@ -31,17 +23,35 @@ class Database {
         });
     }
 
-    getSchema(schema, name) {
-        const s = new this.mongoose.Schema(schema);
-        return this.mongoose.model(name, s);
-    }
-
     getUserSchema(schema){
         return new this.mongoose.Schema(schema);
     }
 
+    generateHash(password, callback){
+        // generate a salt
+        bcrypt.genSalt(10, (err, salt) => {
+            if (err) {
+                callback({err: 'somedin gone wrong with salt factory: ' + err});
+            }
+
+            // hash the password using our new salt
+            bcrypt.hash(password, salt, (err, hash) => {
+                if (err) {
+                    callback({err: 'problem wid da hash? ' + err});
+                } else {
+                    // override the cleartext password with the hashed one
+                    callback({hash: hash});
+                }
+            });
+        });
+    }
+
     hashPassword(Schema) {
         const UserSchema = Schema;
+
+        const genHash = (pw, callback) => this.generateHash(pw, hashedPass => {
+            callback(hashedPass);
+        });
 
         UserSchema.pre('save', function(next) {
             const user = this;
@@ -51,16 +61,15 @@ class Database {
                 return next();
             }
 
-            this.generateHash(user.password, (cb) => {
-                if (cb.hash){
-                    user.password = cb;
+            genHash(user.password, hashedPass => {
+                if (hashedPass.hash) {
+                    user.password = hashedPass.hash;
                     next();
                 }
-                if (cb.err){
-                    next(cb.err);
+                if (hashedPass.err){
+                    next(hashedPass.err);
                 }
-
-            });
+            })
 
         });
 
@@ -79,28 +88,6 @@ class Database {
 
     };
 
-    generateHash(password, callback){
-        // generate a salt
-        bcrypt.genSalt(10, (err, salt) => {
-            if (err) {
-                callback({err: 'somedin gone wrong with salt factory: ' + err});
-            }
-
-            console.log('trying to hash dis: '+ password);
-            // hash the password using our new salt
-            bcrypt.hash(password, salt, (err, hash) => {
-                if (err) {
-                    callback({err: 'problem wid da hash? ' + err});
-                } else {
-                    // override the cleartext password with the hashed one
-                    callback({hash: hash});
-                }
-
-
-            });
-        });
-    }
-
     createUser(User,uname, pword, callback){
         // create a user a new user
         const newUser = new User({
@@ -113,14 +100,13 @@ class Database {
             if (err) {
                 callback(err);
             }
-            callback('User creation successful.')
+            callback('OK')
 
         });
     }
 
     updateUser(User, uName, newPw, callback) {
         let hashedPword = null;
-        console.log('HALOO: ', uName, newPw);
         this.generateHash(newPw, (hashedPass) => {
             if(hashedPass.hash){
                 hashedPword = hashedPass.hash;
@@ -130,13 +116,10 @@ class Database {
                     {$set: {password: hashedPword}}
                 ).then(post => {
                     callback(post);
-                }).then((err) => {
-                    callback('error: ' + err);
                 });
             } else {
                 callback('Generated hash not found: ' + hashedPass.err);
             }
-
 
         });
     }

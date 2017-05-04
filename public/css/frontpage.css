@@ -1,0 +1,14 @@
+#userInfo {
+    float: right;
+    text-align: center;
+}
+
+#inviteBtn {
+    position: absolute;
+    font-size: 28px;
+}
+
+#botImg {
+    height: 150px;
+    width: 150px;
+}

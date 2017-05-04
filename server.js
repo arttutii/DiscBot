@@ -12,12 +12,13 @@ const dotenv = require('dotenv').config(),
     Imgur = require('./modules/Imgur.js'),
     Giphy = require('./modules/Giphy.js'),
     YT = require('./modules/YouTube.js'),
-    DB = require('./modules/DataBase.js');
-const bodyParser = require('body-parser');
+    DB = require('./modules/DataBase.js'),
+    bodyParser = require('body-parser');
 
 app.use(express.static('public'));
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
 app.enable('trust proxy');
 
@@ -88,25 +89,9 @@ app.get('/init', (req, res) => {
     const data = {
         user: DiscBot.client.user,
         avatar: DiscBot.client.user.displayAvatarURL,
+        servers: DiscBot.client.guilds.array(),
     };
     res.send(data);
-});
-
-app.get('/test', (req,res) => {
-    // fetch user and test password verification
-    userModel.findOne({ username: 'admin' }, (err, user) => {
-        if (err) {
-            throw err;
-        } else {
-            user.comparePassword('password', (err, isMatch) => {
-                console.log('test:', isMatch);
-            });
-
-            user.comparePassword('123Password', (err, isMatch) => {
-                console.log('123Password:', isMatch);
-            });
-        }
-    });
 });
 
 app.get('/', shelp.loginStatus, (req, res) => {
@@ -130,7 +115,6 @@ app.post('/login',
 );
 
 app.get('/logout', (req, res) => {
-    console.log('loggin out');
     req.session.destroy(function (err) {
         if (err) console.log(err);
 
@@ -151,23 +135,42 @@ app.get('/user', (req, res) => {
 
 app.post('/user', (req, res) => {
     DB.createUser(userModel, req.body.username,req.body.password, callback => {
-        console.log(callback);
+        if(callback === 'OK'){
+            res.send({userCreated: true})
+        } else {
+            res.send({userCreated: false})
+        }
     });
 });
 
-app.patch('/user', (req, res) => {
-    console.log('qwe: '+ req.body.username);
-    console.log(req.body);
-    /*if(req.body.oldPassword === req.body.newPassword){
-        DB.updateUser(userModel, req.body.username, req.body.newPassword, callback => {
-            console.log(callback);
-        });
-    }*/
+app.put('/user', (req, res) => {
+    userModel.findOne({ username: req.body.username }, (err, user) => {
+        if (err) {
+            throw err;
+        } else {
+            user.comparePassword(req.body.oldPass, (err, isMatch) => {
+                if(isMatch){
+                    DB.updateUser(userModel, req.body.username, req.body.newPass, callback => {
+                        console.log(callback);
+                        res.send(JSON.stringify({userUpdated: true}))
+                    });
+                } else {
+                    res.send({userUpdated: false})
+                }
+            });
+        }
+    });
 
 });
 
 app.delete('/user', (req, res) => {
+    userModel.findOne({username: req.body.username}, (err, user) => {
+        user.remove();
 
+    }).then(response => {
+        console.log('User removed');
+        res.send({status: 'OK', post: response});
+    });
 });
 
 app.use((req, res, next) => {
@@ -182,7 +185,6 @@ app.use((req, res, next) => {
     // default to plain-text. send()
     res.type('txt').send('Not found');
 });
-
 // Express routings end
 
 // This code will run once the bot has started up.
@@ -259,10 +261,6 @@ DiscBot.client.on('message', message => {
                 message.reply(result.message);
             }
         });
-    }
-
-    if (keyword === '!tts' && params) {
-        // TBA
     }
 
     // print out whatever was received to the console
