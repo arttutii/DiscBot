@@ -7,14 +7,37 @@ class DiscBot {
     constructor() {
         // Initialize client
         this.client = new Discord.Client();
-        // bot's current voice channel
-        this.voiceChannel = null;
-        // variable for the current playing audio
-        this.currentAudio = null;
+
+        // Connected servers of the bot, objects contain following data:
+        // Guild name, id, voiceChannel, currentAudio, audioList, currentSong
+        this.servers = [];
     }
 
-    leaveVoiceChannel() {
-        this.voiceChannel.leave();
+    getCurrentGuild(message){
+        let currentGuild = this.servers.find(x => x.id === message.guild.id);
+        // if there is no current server, create one
+        if(!currentGuild){
+            const newServer = {
+                name: message.guild.name,
+                id: message.guild.id,
+                voiceChannel: null,
+                currentAudio: null,
+                audioList: [],
+                currentSong: null
+
+            };
+            this.servers.push(newServer);
+            return newServer;
+        } else {
+            return currentGuild;
+        }
+    }
+
+    leaveVoiceChannel(message) {
+        const currentGuild = this.servers.find(x => x.id === message.guild.id);
+        if (currentGuild){
+            currentGuild.voiceChannel.leave();
+        }
     }
 
     setAvatar(query, callback) {
@@ -27,7 +50,7 @@ class DiscBot {
                     callback('Avatar set successfully!');
                 }).catch((err) => {
                 console.log(err);
-                if (err.status == 400) {
+                if (err.status === 400) {
                     callback('Sorry, you are changing the avatar too frequently. Please wait and try again later.');
                 } else {
                     callback('Sorry could not set the avatar image. The URL for the avatar you requested did not result an image.');
@@ -39,22 +62,51 @@ class DiscBot {
         }
     }
 
-    startAudio(connection, vidURL, localFile) {
+    startAudio(currentGuild, connection, vidURL, localFile) {
         // play the file
         if (localFile) {
-            this.currentAudio = connection.playFile(localFile);
+            const streamOptions = {seek: 0, volume: 1};
+            currentGuild.currentAudio = connection.playFile(localFile, streamOptions);
         } else {
             const stream = ytdl('https://www.youtube.com/watch?v=' + vidURL, {filter: 'audioonly'});
-            const streamOptions = {seek: 0, volume: 1};
-            this.currentAudio = connection.playStream(stream, streamOptions);
+            const streamOptions = {seek: 0, volume: 0.3};
+            currentGuild.currentAudio = connection.playStream(stream, streamOptions);
         }
+    }
+
+    pauseAudio(message, callback){
+        const currentGuild = this.getCurrentGuild(message);
+        if (currentGuild.currentAudio){
+            currentGuild.currentAudio.pause();
+            // time in milliseconds
+            let pauseTime = currentGuild.currentAudio.time;
+            callback(pauseTime);
+        } else {
+            callback('no currentAudio');
+        }
+    }
+
+    resumeAudio(message){
+        const currentGuild = this.getCurrentGuild(message);
+        currentGuild.currentAudio.resume();
+    }
+
+    queueAudio(message, audio){
+        const currentGuild = this.getCurrentGuild(message);
+        currentGuild.audioList.push = audio;
+    }
+
+    nextAudio(){
+
     }
 
     playAudio(message, vidURL, localFile) {
         try {
+            const currentGuild = this.getCurrentGuild(message);
+
             // if an audio was playing, stop it before starting a new one
-            if (this.currentAudio) {
-                this.currentAudio.end();
+            if (currentGuild.currentAudio) {
+                currentGuild.currentAudio.end();
             }
 
             // Get the first voice channel on the server of the sender
@@ -64,21 +116,21 @@ class DiscBot {
 
             // Find the channel from the bot's perspective and join it
             if (userVC) {
-                this.voiceChannel = (this.client.channels.find(channel => channel.id === userVC));
+                currentGuild.voiceChannel = this.client.channels.find(channel => channel.id === userVC);
             } else {
-                this.voiceChannel = (this.client.channels.find(channel => channel === firstVC));
+                currentGuild.voiceChannel = this.client.channels.find(channel => channel === firstVC);
             }
 
-            if (this.voiceChannel === userVC){
-                this.startAudio(this.voiceChannel.connection, vidURL, localFile);
+            if (currentGuild.voiceChannel === userVC){
+                this.startAudio(currentGuild, currentGuild.voiceChannel.connection, vidURL, localFile);
             } else {
-                this.voiceChannel.join().then(connection => {
-                    this.startAudio(connection, vidURL, localFile);
+                currentGuild.voiceChannel.join().then(connection => {
+                    this.startAudio(currentGuild, connection, vidURL, localFile);
                 });
             }
 
         } catch (e) {
-            console.log(e);
+            console.log('playAudio error: ', e);
         }
     }
 }

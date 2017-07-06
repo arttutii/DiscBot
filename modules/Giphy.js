@@ -17,7 +17,13 @@ class GiphyModule {
             if (results.data === undefined || results.data.length === 0) {
                 callback("Sorry, I couldn't find any giphys for the term: " + query);
             } else {
-                const gif = results.data[Math.floor(Math.random() * results.data.length)];
+                let gif;
+                if (results.data.length < 25){
+                    gif = results.data[Math.floor(Math.random() * results.data.length)];
+                } else {
+                    gif = results.data[Math.floor(Math.random() * 25)];
+                }
+
                 callback(gif.url);
             }
         });

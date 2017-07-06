@@ -13,7 +13,8 @@ const dotenv = require('dotenv').config(),
     Giphy = require('./modules/Giphy.js'),
     YT = require('./modules/YouTube.js'),
     DB = require('./modules/DataBase.js'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    TTS = require('./modules/TextToSpeech.js');
 
 app.use(express.static('public'));
 
@@ -26,11 +27,24 @@ app.enable('trust proxy');
 const user = process.env.DB_USER;
 const pw = process.env.DB_PASS;
 const host = process.env.DB_HOST;
+/*
 DB.connect('mongodb://' + user + ":" + pw + "@" + host, app, () => {
     // Login with the bot's token
-    DiscBot.client.login(process.env.BOT_TOKEN);
+    try {
+        DiscBot.client.login(process.env.BOT_TOKEN);
+    } catch (e) {
+        console.log('error with bot login: ', e);
+    }
 
 });
+*/
+// Login with the bot's token
+try {
+    console.log('connecting..');
+    DiscBot.client.login(process.env.BOT_TOKEN);
+} catch (e) {
+    console.log('error with bot login: ', e);
+}
 
 const UserSchema = {
     username: {type: String, required: true, index: {unique: true}},
@@ -207,10 +221,12 @@ DiscBot.client.on('message', message => {
     let keyword = shelp.parseKeyword(message.content).toLowerCase().trim();
     // assign message's parameters, if there are any
     let params = null;
+    let ttsString = null;
     if (msg.length > 1) {
         params = shelp.parseParams(message.content);
+        ttsString = shelp.parseParams(message.content);
         // replace accented characters
-        params = params.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+        params = encodeURI(params).replace(/%20/g,' ');
     }
 
     if (keyword === '!help'){
@@ -219,6 +235,7 @@ DiscBot.client.on('message', message => {
             + '\n !imgur [search word/s]'
             + '\n !giphy [search word/s]'
             + '\n !yt [search word/s]'
+            + '\n !tts [/languageCode (eg. sv)] [/speakSpeed (0.01-1)] [word/s] --Maximum 200 characters'
             + '\n !hello'
             + '\n !stop'
         );
@@ -229,7 +246,7 @@ DiscBot.client.on('message', message => {
     }
 
     if (keyword === '!stop'){
-        DiscBot.leaveVoiceChannel();
+        DiscBot.leaveVoiceChannel(message);
     }
 
     if (keyword === '!setavatar' && params){
@@ -249,6 +266,19 @@ DiscBot.client.on('message', message => {
         Giphy.searchGif(params, (result) => {
             console.log('giphy result: ' + result );
             message.reply(result);
+        });
+    }
+
+    if (keyword === '!tts' && ttsString) {
+        TTS.talk(ttsString, (result) => {
+            if (result.status === 'OK'){
+                DiscBot.pauseAudio(message, pauseTime => {
+                    console.log('pauseTime:', pauseTime);
+                });
+                DiscBot.playAudio(message, null, './modules/' + result.message);
+            } else {
+                message.reply(result.message);
+            }
         });
     }
 

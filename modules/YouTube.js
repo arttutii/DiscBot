@@ -13,7 +13,7 @@ class YouTubeModule {
                 return res.json();
             }).then((results) => {
 
-            if (results.items.length == 0) {
+            if (results.items.length === 0) {
                 callback({status: 'error', message: 'Search with term "' + searchTerm + '" did not find any videos.'});
             } else {
                 // Go through the entries and take the first video in the list

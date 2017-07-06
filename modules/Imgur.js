@@ -16,7 +16,12 @@ class ImgurModule {
             if (results === undefined || results.length === 0) {
                 callback("Sorry, I couldn't find any imgurs for the term: " + query);
             } else {
-                const img = results[Math.floor(Math.random() * results.length)];
+                let img;
+                if (results.length < 25 ){
+                    img = results[Math.floor(Math.random() * results.length)];
+                } else {
+                    img = results[Math.floor(Math.random() * 25)];
+                }
                 callback(img.link);
             }
         });
