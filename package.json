@@ -18,22 +18,14 @@
   },
   "homepage": "https://github.com/arttutii/DiscBot#readme",
   "dependencies": {
-    "bcrypt": "^1.0.2",
-    "body-parser": "^1.17.1",
     "discord.js": "^11.0.0",
     "dotenv": "^4.0.0",
-    "express": "^4.15.2",
-    "express-session": "^1.15.2",
     "google-tts-api": "0.0.1",
     "http": "0.0.0",
     "https": "^1.0.0",
     "imgur-search": "^1.0.1",
-    "mongoose": "^4.9.5",
     "node-fetch": "^1.6.3",
     "node-opus": "^0.2.6",
-    "passport": "^0.3.2",
-    "passport-local": "^1.0.0",
-    "say": "^0.11.0",
     "supervisor": "^0.12.0",
     "ytdl-core": "^0.13.1"
   }
