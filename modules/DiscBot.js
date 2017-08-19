@@ -1,7 +1,11 @@
 'use strict';
 
 const Discord = require('discord.js'),
-    ytdl = require('ytdl-core');
+    ytdl = require('ytdl-core'),
+    shelp = require('ServerHelper');
+
+// assign a logger which logs console output to a file
+const log = shelp.logger();
 
 class DiscBot {
     constructor() {
@@ -41,15 +45,15 @@ class DiscBot {
     }
 
     setAvatar(query, callback) {
-        console.log(query);
+        log.ínfo(query);
         // check if the URL is valid
         if (query.startsWith("http://") || query.startsWith("https://")) {
             this.client.user.setAvatar(query)
                 .then((user) => {
-                    console.log(`New avatar set: ` + query);
+                    log.info(`New avatar set: ` + query);
                     callback('Avatar set successfully!');
                 }).catch((err) => {
-                console.log(err);
+                log.log('error', err);
                 if (err.status === 400) {
                     callback('Sorry, you are changing the avatar too frequently. Please wait and try again later.');
                 } else {
@@ -57,7 +61,7 @@ class DiscBot {
                 }
             });
         } else {
-            console.log('Requested avatar url not valid.');
+            log.info('Requested avatar url not valid.');
             callback('Sorry could not set the avatar image. The URL for the avatar you requested is not valid.');
         }
     }
@@ -130,7 +134,7 @@ class DiscBot {
             }
 
         } catch (e) {
-            console.log('playAudio error: ', e);
+            log.log('error', 'playAudio error: ', e);
         }
     }
 }

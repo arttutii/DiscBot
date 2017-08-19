@@ -1,4 +1,9 @@
 'use strict';
+const winston = require('winston'),
+    moment = require('moment');
+
+// set correct locale for logging
+moment.locale('fi');
 
 class ServerHelper {
 
@@ -17,12 +22,27 @@ class ServerHelper {
         return newStr.substr(start, end);
     }
 
-    loginStatus(req, res, next) {
-        if (req.user) {
-            next();
-        } else {
-            res.redirect('/login');
-        }
+        /**TODO: 
+            RM BOT_TOKEN, GOOGLE_KEY
+            temp.mp3 -> audio/ 
+        */
+    logger() {
+        return new (winston.Logger)({
+            transports: [
+                new (winston.transports.File)({ filename: `./logs/${moment().format('YYYY-MM-DD')}.log`}),
+                new (winston.transports.Console)({
+                  timestamp: function() {
+                    return moment().format('L-LTS');
+                  },
+                  formatter: function(options) {
+                    // Return string will be passed to logger. 
+                    return options.timestamp()+' '+ (options.message ? options.message : '') +
+                      (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+                  }
+                })
+            ]
+        });  
+
     }
 }
 

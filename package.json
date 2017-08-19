@@ -24,9 +24,11 @@
     "http": "0.0.0",
     "https": "^1.0.0",
     "imgur-search": "^1.0.1",
+    "moment": "^2.18.1",
     "node-fetch": "^1.6.3",
     "node-opus": "^0.2.6",
     "supervisor": "^0.12.0",
+    "winston": "^2.3.1",
     "ytdl-core": "^0.13.1"
   }
 }

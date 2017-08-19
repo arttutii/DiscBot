@@ -70,7 +70,6 @@ class TTSModule {
                 msg = shelp.parseParams(msg);
             }
         }
-        console.log(msg.length);
         // tts seems to only play queries under 200 characters
         if (msg.length <= 200){
             googleTTS(msg, lg, speed)   // speed normal = 1 (default), slow = 0.24
