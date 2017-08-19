@@ -2,7 +2,7 @@
 
 const Discord = require('discord.js'),
     ytdl = require('ytdl-core'),
-    shelp = require('ServerHelper');
+    shelp = require('./ServerHelper.js');
 
 // assign a logger which logs console output to a file
 const log = shelp.logger();
