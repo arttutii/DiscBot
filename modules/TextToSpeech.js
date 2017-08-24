@@ -74,7 +74,7 @@ class TTSModule {
         if (msg.length <= 200){
             googleTTS(msg, lg, speed)   // speed normal = 1 (default), slow = 0.24
                 .then((url) => {
-                    const dest = path.resolve(__dirname, 'temp.mp3'); // file destination
+                    const dest = path.resolve(__dirname, '../audio/temp.mp3'); // file destination
                     const dl = (url, callback) => this.downloadFile(url, dest, cb =>{
                         callback(cb);
                     });

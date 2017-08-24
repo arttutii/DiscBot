@@ -4,6 +4,12 @@
             temp.mp3 -> audio/ 
         */
 
+        /* 
+            added:
+                TTS file location --> audio/ 
+                yt playlist info library added (w/o --save)
+        */
+
 'use strict';
 const dotenv = require('dotenv').config(),
     ytdl = require('ytdl-core'),
@@ -91,7 +97,7 @@ DiscBot.client.on('message', message => {
                 DiscBot.pauseAudio(message, pauseTime => {
                     log.info('pauseTime:', pauseTime);
                 });
-                DiscBot.playAudio(message, null, './modules/' + result.message);
+                DiscBot.playAudio(message, null, './audio/' + result.message);
             } else {
                 message.reply(result.message);
             }
@@ -106,6 +112,15 @@ DiscBot.client.on('message', message => {
             } else {
                 message.reply(result.message);
             }
+        });
+    }
+
+    if (keyword === '!ytpl' && params) {
+        // esim. 
+        // !ytpl RDQMgEzdN5RuCXE
+        var ypi = require('youtube-playlist-info');
+        ypi.playlistInfo(process.env.GOOGLE_KEY, params, function(playlistItems) {
+          console.log(playlistItems);
         });
     }
 
