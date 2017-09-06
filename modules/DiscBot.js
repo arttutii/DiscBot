@@ -61,7 +61,7 @@ class DiscBot {
                 }
             });
         } else {
-            log.info('Requested avatar url not valid.');
+            log.log('error', 'Requested avatar url not valid.');
             callback('Sorry could not set the avatar image. The URL for the avatar you requested is not valid.');
         }
     }
@@ -95,8 +95,7 @@ class DiscBot {
         currentGuild.currentAudio.resume();
     }
 
-    queueAudio(message, audio){
-        const currentGuild = this.getCurrentGuild(message);
+    queueAudio(currentGuild, connection, audio){
         currentGuild.audioList.push = audio;
     }
 
@@ -127,6 +126,7 @@ class DiscBot {
 
             if (currentGuild.voiceChannel === userVC){
                 this.startAudio(currentGuild, currentGuild.voiceChannel.connection, vidURL, localFile);
+                //this.queueAudio()
             } else {
                 currentGuild.voiceChannel.join().then(connection => {
                     this.startAudio(currentGuild, connection, vidURL, localFile);

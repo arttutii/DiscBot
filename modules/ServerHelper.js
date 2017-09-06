@@ -22,6 +22,12 @@ class ServerHelper {
         return newStr.substr(start, end);
     }
 
+    parseYoutubeUrl(url){
+        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+        var match = url.match(regExp);
+        return (match&&match[7].length==11)? match[7] : false;
+    }
+
         /**TODO: 
             RM BOT_TOKEN, GOOGLE_KEY
             temp.mp3 -> audio/ 

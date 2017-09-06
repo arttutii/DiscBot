@@ -1,13 +1,14 @@
 
         /**TODO: 
             RM BOT_TOKEN, GOOGLE_KEY
-            temp.mp3 -> audio/ 
+            !ytpl
         */
 
         /* 
             added:
                 TTS file location --> audio/ 
                 yt playlist info library added (w/o --save)
+                06.09.2017 -- YT play with URL
         */
 
 'use strict';
@@ -116,11 +117,17 @@ DiscBot.client.on('message', message => {
     }
 
     if (keyword === '!ytpl' && params) {
-        // esim. 
+        // e.g.
         // !ytpl RDQMgEzdN5RuCXE
-        var ypi = require('youtube-playlist-info');
-        ypi.playlistInfo(process.env.GOOGLE_KEY, params, function(playlistItems) {
-          console.log(playlistItems);
+        // TODO: parsee urlista list=CODE
+        // call discbot.queueaudio() w/ listitems array
+        YT.ytPlaylist(params, (result) => {
+            if (result.status === 'OK'){
+                log.info(`ytpl result: ${result.message[0].channelTitle} | ${result.message.length} items`);
+                // playaudio
+            } else {
+                message.reply(result.message);
+            }
         });
     }
 
